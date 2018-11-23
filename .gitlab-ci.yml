@@ -6,8 +6,8 @@ stages:
   - CLUSTER-SETUP
   - PROVIDER-INFRA-SETUP
     #  - STATEFUL-APP-DEPLOY
-    #  - APP-FUNC-TEST
-    #  - APP-CHAOS-TEST
+    #  -  APP-FUNC-TEST
+  - APP-CHAOS-TEST
   - CLUSTER-CLEANUP
 
 variables: 
@@ -40,6 +40,20 @@ openebs-gke-deploy:
       - .kube-openebs/
 
 ## Define a job template for app deployers
+
+.chaos_test_template:
+  image: atulabhi/kops:v9
+  stage: APP-CHAOS-TEST
+  when: always 
+  artifacts:
+    paths: 
+      - .kube-openebs/
+
+repl-kill-{percona-jiva}:
+  extends: .chaos_test_template #dependencies: percona-jiva
+  script:
+   - ./script/apps/percona/chaos/jiva/volume-replica-failure
+
 
 cleanup-gke:
   when: always
